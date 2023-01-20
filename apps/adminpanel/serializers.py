@@ -64,3 +64,26 @@ class InfoxAIEngineSerializer(serializers.ModelSerializer):
             basegrouppermission.app_module_permission.add(*perm_obj)
             
         return base_group_created
+
+
+class UseCaseCategorySerializer(serializers.ModelSerializer):
+   
+    class Meta(object):
+        model = SwooshUseCaseCategory
+        fields = '__all__'
+class RelatedUseCaseSerializer(serializers.ModelSerializer):
+   
+    class Meta(object):
+        model = SwooshUseCase
+        fields = '__all__'
+
+class UseCaseSerializer(serializers.ModelSerializer):
+    related_usecase = serializers.SerializerMethodField()
+   
+    class Meta(object):
+        model = SwooshUseCase
+        fields = '__all__'
+ 
+    def get_related_usecase(self,obj):
+        queryset = SwooshUseCase.objects.filter(category = obj.category).exclude(id = obj.id)
+        return RelatedUseCaseSerializer(queryset,many=True).data 

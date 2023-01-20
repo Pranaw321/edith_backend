@@ -16,6 +16,9 @@ urlpatterns = [
 
     path('infox-ai-engine', views.ListInfoxAPIView.as_view()),
     path('imagex-ai-engine', views.ListImagexAPIView.as_view()),
+    path('create-usecase-category', views.ListCreateUseCaseCategoryAPIView.as_view()),
+    path('create-usecase', views.ListCreateUseCaseAPIView.as_view()),
+    path('usecase-detail/<int:pk>/', views.RetrieveUpdateDestroyUseCaseAPIView.as_view(), name='get_delete_update_usecase'),
 
 
 
