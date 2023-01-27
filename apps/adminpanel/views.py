@@ -7,6 +7,7 @@ from .serializers import *
 from rest_framework import generics, status,views
 from rest_framework.response import Response
 from rest_framework import filters
+from apps.userpanel.paginations import SwooshPagination
 
 
 # Create your views here.
@@ -61,6 +62,7 @@ class ListCreatePageAPIView(ListCreateAPIView):
     serializer_class = PageSerializer
     queryset = SwooshPage.objects.all()
     permission_classes = [AllowAny,]
+    pagination_class = SwooshPagination
 
     def post(self, request):
         try:
@@ -117,12 +119,14 @@ class RetrieveUpdateDestroySubSectionAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class ListInfoxAPIView(ListAPIView):
+    pagination_class = SwooshPagination
     serializer_class =PageSerializer
     queryset = SwooshPage.objects.filter(menu_type__type_name ='ai_engine_infox')
     permission_classes = [AllowAny,]
 
 
 class ListImagexAPIView(ListAPIView):
+    pagination_class = SwooshPagination
     serializer_class =PageSerializer
     queryset = SwooshPage.objects.filter(menu_type__type_name ='ai_engine_image_x')
     permission_classes = [AllowAny,]
@@ -133,6 +137,7 @@ class ListCreateUseCaseCategoryAPIView(ListCreateAPIView):
     serializer_class = UseCaseCategorySerializer
     queryset = SwooshUseCaseCategory.objects.all()
     permission_classes = [AllowAny,]
+    pagination_class = SwooshPagination
 
     def post(self, request):
         try:
@@ -152,7 +157,7 @@ class ListCreateUseCaseAPIView(ListCreateAPIView):
     search_fields = ['title','category__name','content']
     filter_backends = (filters.SearchFilter,)
     serializer_class = UseCaseSerializer
-    
+    pagination_class = SwooshPagination
     permission_classes = [AllowAny,]
 
     def get_queryset(self):
@@ -182,4 +187,11 @@ class ListCreateUseCaseAPIView(ListCreateAPIView):
 class RetrieveUpdateDestroyUseCaseAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UseCaseSerializer
     queryset = SwooshUseCase.objects.all()
+    permission_classes = [AllowAny,]
+
+
+class ListGlobelSearchView(ListAPIView):
+    pagination_class = SwooshPagination
+    serializer_class =PageSerializer
+    queryset = SwooshPage.objects.filter(menu_type__type_name ='ai_engine_image_x')
     permission_classes = [AllowAny,]

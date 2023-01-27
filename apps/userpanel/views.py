@@ -12,6 +12,9 @@ from .serializers import *
 from apps.userpanel.paginations import SwooshPagination
 from rest_framework.generics import GenericAPIView
 from django.conf import settings
+import requests
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 
 
@@ -44,16 +47,48 @@ class RoleCreateAPIView(generics.ListCreateAPIView):
 
 
 
-class LoginAPIView(generics.ListCreateAPIView):
+class LoginAPIView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = LoginSerializer
 
     def post(self, request):
-        print(request.data)
+        try:
+            print(request.data)
+            url = 'http://swoosh-dev-infox.apps.swoosh-np.ocp.dev.net/api/v1/infox/user/authentication'
+            print(request.data)
+            payload = {
+                "username": "1670129",
+                "password":"SCBpassword1$"
+            }
+            headers={ 'Authorization': 'eyJ1c2VyX2lkljoiMTYwMzUzNClslmV4cCl6MTYwODI3MDkxNn0' }
+            response = requests.post(url, data = payload,headers=headers)
+            if response:
+                data = payload
+                print(data)
+                if SwooshUser.objects.filter(ps_id= payload["username"]).exists():
+                    user = SwooshUser.objects.get(ps_id=payload["username"])
+                    
+                else:
+                    user = SwooshUser.objects.create(ps_id= payload["username"],password=payload["password"])
+                    
+                refresh = RefreshToken.for_user(user)
+                
+                user_details = {}
+                
+                user_details['name'] = "%s %s" % ( user.first_name, user.last_name)
+                
+                user_details['token'] = str(refresh)
+                
+                
+                return Response(user_details, status=status.HTTP_200_OK)
+            error = {'status': False, 'error':{'message': ["Invalid Crediantial"] }}
+            return Response(error, status=status.HTTP_200_OK)
+        except Exception as e:
+                error = {'status': False, 'error':{'message': ["Something Went Wrong"+str(e)] if len(e.args) > 0 else 'Unknown Error'}}
+                return Response(error, status=status.HTTP_200_OK)
+
         
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
 '''
 Module Permissions Create and list
 

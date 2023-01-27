@@ -19,6 +19,7 @@ urlpatterns = [
     path('create-usecase-category', views.ListCreateUseCaseCategoryAPIView.as_view()),
     path('create-usecase', views.ListCreateUseCaseAPIView.as_view()),
     path('usecase-detail/<int:pk>/', views.RetrieveUpdateDestroyUseCaseAPIView.as_view(), name='get_delete_update_usecase'),
+    path('globel-search', views.ListGlobelSearchView.as_view()),
 
 
 
