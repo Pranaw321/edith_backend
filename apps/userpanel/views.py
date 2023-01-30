@@ -55,16 +55,15 @@ class LoginAPIView(generics.CreateAPIView):
         try:
             print(request.data)
             url = 'http://swoosh-dev-infox.apps.swoosh-np.ocp.dev.net/api/v1/infox/user/authentication'
-            print(request.data)
+            # print(request.data)
             payload = {
-                "username": "1670129",
-                "password":"SCBpassword1$"
+                "username": request.data["username"],
+                "password":request.data["password"]
             }
             headers={ 'Authorization': 'eyJ1c2VyX2lkljoiMTYwMzUzNClslmV4cCl6MTYwODI3MDkxNn0' }
-            response = requests.post(url, data = payload,headers=headers)
+            response = requests.post(url, json = payload,headers=headers)
+            print(response)
             if response:
-                data = payload
-                print(data)
                 if SwooshUser.objects.filter(ps_id= payload["username"]).exists():
                     user = SwooshUser.objects.get(ps_id=payload["username"])
                     
@@ -72,15 +71,16 @@ class LoginAPIView(generics.CreateAPIView):
                     user = SwooshUser.objects.create(ps_id= payload["username"],password=payload["password"])
                     
                 refresh = RefreshToken.for_user(user)
-                
                 user_details = {}
                 
                 user_details['name'] = "%s %s" % ( user.first_name, user.last_name)
+                user_details['ps_id'] = user.ps_id
                 
-                user_details['token'] = str(refresh)
-                
-                
-                return Response(user_details, status=status.HTTP_200_OK)
+                user_details['access_token'] = str(refresh.access_token)
+                user_details['refresh_token'] = str(refresh)
+                print(user_details)
+                msg = {'status': True, 'data': user_details}
+                return Response(msg, status=status.HTTP_200_OK)
             error = {'status': False, 'error':{'message': ["Invalid Crediantial"] }}
             return Response(error, status=status.HTTP_200_OK)
         except Exception as e:
