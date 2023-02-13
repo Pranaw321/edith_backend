@@ -112,9 +112,21 @@ class UserRole(models.Model):
     class Meta:
         db_table = "user_roles"
 
+class AppModuleCategory(models.Model):
+    name = models.CharField(max_length=550, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        db_table = "app_module_category"
 
+        
 class AppModule(models.Model):
-    module = models.CharField(blank=False, null=False, max_length=21)
+    category = models.ForeignKey(AppModuleCategory, on_delete=models.SET_NULL, null=True)
+    module = models.CharField(blank=False, null=False, max_length=21,unique=True)
+    title = models.CharField(blank=False, null=False, max_length=300 )
+    description = models.TextField(blank=True, null=True)
+    icon = models.FileField(upload_to="media/document/",default=None,blank=True, null=True)
     is_active = models.BooleanField(default=True)
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -142,8 +154,8 @@ class BaseGroup(models.Model):
         db_table = "base_group"
 
 class GroupMember(models.Model):
-    member = models.OneToOneField(SwooshUser,on_delete=models.SET_NULL, null=True)
-    group = models.ManyToManyField(BaseGroup,blank=True,related_name='members')
+    base_group = models.ForeignKey(BaseGroup, on_delete=models.SET_NULL, null=True)
+    user = models.ManyToManyField(SwooshUser, related_name='group_member')
     is_active = models.BooleanField(default=True)
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)

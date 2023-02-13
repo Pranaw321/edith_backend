@@ -9,11 +9,16 @@ urlpatterns = [
     path('auth/register', views.AdminRegisterationAPIView.as_view()),
     path('admin/login', views.LoginAPIView.as_view()),
     path('user/create-role', views.RoleCreateAPIView.as_view()),
+    path('admin/create-module-category', views.CreateModuleCategoryAPIView.as_view()),
     path('admin/create-module', views.CreateModuleAPIView.as_view()),
     path('admin/create-module-permission', views.CreateModulePermissionAPIView.as_view()),
     path('admin/module-permissions', views.CreateModulePermissionListAPIView.as_view()),
     path('admin/create-user-profile', views.CreateUserProfileAPIView.as_view()),
     path('admin/user-profile-lists', views.UserProfileListAPIView.as_view()),
+    path('admin/create-bazaar-app-category', views.CreateModuleCategoryAPIView.as_view()),
+    path('admin/create-bazaar-app', views.CreateModuleAPIView.as_view()),
+    path('create-bazaar-app-update/<int:pk>/', views.RetrieveUpdateModuleAPIView.as_view(), name='get_delete_update_module'),
+    path('assign-group-permission', views.AssignGroupMemberPermissionAPIView.as_view()),
 
 
 ]

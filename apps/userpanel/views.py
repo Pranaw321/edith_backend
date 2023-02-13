@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.permissions import *  
 from .models import *
 from .serializers import *
-
+from rest_framework.generics import *
 from apps.userpanel.paginations import SwooshPagination
 from rest_framework.generics import GenericAPIView
 from django.conf import settings
@@ -16,14 +16,10 @@ import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-
-
 class AdminRegisterationAPIView(generics.CreateAPIView):
-    
     serializer_class = RegisterSerializer
     def post(self, request):
         try:
-            
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid(raise_exception=False):
                 serializer.save()
@@ -34,8 +30,6 @@ class AdminRegisterationAPIView(generics.CreateAPIView):
             error = {'status': False, 'error':{'message': ["Something Went Wrong"+str(e)] if len(e.args) > 0 else 'Unknown Error'}}
             return Response(error, status=status.HTTP_200_OK)
 
-
-
 class RoleCreateAPIView(generics.ListCreateAPIView):
 
     serializer_class = RoleSerializer
@@ -44,18 +38,13 @@ class RoleCreateAPIView(generics.ListCreateAPIView):
         queryset = Role.objects.all()
         return queryset
 
-
-
-
 class LoginAPIView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = LoginSerializer
-
     def post(self, request):
         try:
             print(request.data)
             url = 'http://swoosh-dev-infox.apps.swoosh-np.ocp.dev.net/api/v1/infox/user/authentication'
-            # print(request.data)
             payload = {
                 "username": request.data["username"],
                 "password":request.data["password"]
@@ -65,29 +54,23 @@ class LoginAPIView(generics.CreateAPIView):
             print(response)
             if response:
                 if SwooshUser.objects.filter(ps_id= payload["username"]).exists():
-                    user = SwooshUser.objects.get(ps_id=payload["username"])
-                    
+                    user = SwooshUser.objects.get(ps_id=payload["username"])    
                 else:
-                    user = SwooshUser.objects.create(ps_id= payload["username"],password=payload["password"])
-                    
+                    user = SwooshUser.objects.create(ps_id= payload["username"],password=payload["password"])    
                 refresh = RefreshToken.for_user(user)
                 user_details = {}
-                
                 user_details['name'] = "%s %s" % ( user.first_name, user.last_name)
                 user_details['ps_id'] = user.ps_id
-                
                 user_details['access_token'] = str(refresh.access_token)
                 user_details['refresh_token'] = str(refresh)
-                print(user_details)
                 msg = {'status': True, 'data': user_details}
                 return Response(msg, status=status.HTTP_200_OK)
-            error = {'status': False, 'error':{'message': ["Invalid Crediantial"] }}
+            error = {'status': False, 'error':{'message': ["Invalid Credentials"] }}
             return Response(error, status=status.HTTP_200_OK)
         except Exception as e:
                 error = {'status': False, 'error':{'message': ["Something Went Wrong"+str(e)] if len(e.args) > 0 else 'Unknown Error'}}
                 return Response(error, status=status.HTTP_200_OK)
 
-        
         
 '''
 Module Permissions Create and list
@@ -99,6 +82,14 @@ class CreateModuleAPIView(generics.ListCreateAPIView):
     queryset = AppModule.objects.all()
     def get_queryset(self):
         queryset = AppModule.objects.all()
+        return queryset
+
+class CreateModuleCategoryAPIView(generics.ListCreateAPIView):
+
+    serializer_class = AppModuleCategorySerializer
+    queryset = AppModuleCategory.objects.all()
+    def get_queryset(self):
+        queryset = AppModuleCategory.objects.all()
         return queryset
 
 '''
@@ -142,3 +133,32 @@ class UserProfileListAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = BaseGroupPermissions.objects.all()
         return queryset
+    
+
+class RetrieveUpdateModuleAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = AppModuleSerializer
+    queryset = AppModule.objects.all()
+    permission_classes = [AllowAny,]
+
+
+class AssignGroupMemberPermissionAPIView(generics.CreateAPIView):
+
+    serializer_class = UserGroupPermissionSerializer
+    queryset = BaseGroup.objects.all()
+    def get_queryset(self):
+        queryset = BaseGroup.objects.all()
+        return queryset
+    
+    def post(self, request):
+        try:
+            
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=False):
+                serializer.save()
+                data = serializer.data
+                context = {'status': True,'data':data, 'message': 'Successfully SubPage Added'}
+                return Response(context, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_200_OK)
+        except Exception as e:
+            error = {'status': False, 'error':{'message': ["Something Went Wrong"+str(e)] if len(e.args) > 0 else 'Unknown Error'}}
+            return Response(error, status=status.HTTP_200_OK)

@@ -82,7 +82,11 @@ class LoginSerializer(serializers.Serializer):
         return user
 
 
-
+class AppModuleCategorySerializer(serializers.ModelSerializer):
+   
+    class Meta(object):
+        model = AppModuleCategory
+        fields = '__all__'
 
 class AppModuleSerializer(serializers.ModelSerializer):
    
@@ -110,20 +114,22 @@ class CustomAppModulePermissionSerializer(serializers.Serializer):
     module_permisson_name = serializers.CharField(required=True)
 
 
+class CustomAppUserSerializer(serializers.Serializer):
+    id=serializers.IntegerField(required=True)
+    ps_id = serializers.CharField(required=True)
+
+
 class UserGroupPermissionSerializer(serializers.ModelSerializer):
     permissions = CustomAppModulePermissionSerializer(many=True,write_only=True)
+    users = CustomAppModulePermissionSerializer(many=True,write_only=True)
  
     class Meta(object):
         model = BaseGroup
-        fields = ['id','group_name','permissions']
+        fields = ['id','group_name','permissions','users']
     @transaction.atomic
     def create(self, validated_data):
-        members = None
-        print("fdkjfsdjfkdsjkf",validated_data)
         if 'permissions' in validated_data.keys():
             permissions = validated_data.pop('permissions')
-            print(permissions)
-
         # Create the base group
         base_group_created = BaseGroup.objects.create(**validated_data)
 
@@ -136,6 +142,18 @@ class UserGroupPermissionSerializer(serializers.ModelSerializer):
                     )
             
             basegrouppermission.app_module_permission.add(*perm_obj)
+        
+        if 'users' in validated_data.keys():
+            members = validated_data.pop('users')
+        if members is not None:
+            members_ids = [ member['id'] for member in members ]
+            perm_user_obj = SwooshUser.objects.filter(id__in = members_ids)
+         
+            basegroupmember= GroupMember.objects.get_or_create(
+                        base_group=base_group_created
+                    )
+            
+            basegroupmember.user.add(*perm_user_obj)
             
         return base_group_created
 
